@@ -1,0 +1,75 @@
+arguments:
+  backbone:
+    ModelConfig:
+      arguments:
+        activation_layer: gelu
+        add_global_variables_after_pooling: false
+        add_norm_layer: true
+        dynedge_layer_sizes: null
+        features_subset: null
+        global_pooling_schemes: [min, max, mean, sum]
+        nb_inputs: 19
+        nb_neighbours: 32
+        post_processing_layer_sizes: null
+        readout_layer_sizes: null
+        skip_readout: false
+      class_name: DynEdge
+  data_representation: null
+  gnn: null
+  graph_definition:
+    ModelConfig:
+      arguments:
+        columns: [0, 1, 2, 7]
+        detector:
+          ModelConfig:
+            arguments:
+              replace_with_identity: [dom_x, dom_y, dom_z, charge, dom_time]
+            class_name: IceCube86
+        distance_as_edge_feature: false
+        dtype: torch.float32
+        input_feature_names: [dom_x, dom_y, dom_z, charge, dom_time]
+        nb_nearest_neighbours: 32
+        node_definition:
+          ModelConfig:
+            arguments:
+              add_counts: true
+              charge_after_t: [10, 50, 100]
+              charge_label: charge
+              charge_standardization: log
+              cluster_on: [dom_x, dom_y, dom_z]
+              input_feature_names: [dom_x, dom_y, dom_z, charge, dom_time]
+              order_in_time: true
+              time_after_charge_pct: [1, 3, 5, 11, 15, 20, 50, 80]
+              time_label: dom_time
+              time_of_first_hit: true
+              time_spread: true
+              time_standardization: 0.001
+              time_std: true
+              total_charge: true
+            class_name: ClusterSummaryFeatures
+        perturbation_dict: null
+        seed: null
+      class_name: KNNGraph
+  optimizer_class: '!class torch.optim.adam Adam'
+  optimizer_kwargs: {lr: 0.001, weight_decay: 0.0}
+  scheduler_class: '!class graphnet.training.callbacks ReduceLROnPlateauWithWarmup'
+  scheduler_config: {frequency: 1, interval: step, monitor: train_loss, reduce_on_plateau: true}
+  scheduler_kwargs:
+    reducelronplateau_kwargs: {factor: 0.5, mode: min, patience: 1000, threshold: 0.01}
+    warmup_kwargs: {start_factor: 0.001}
+    warmup_milestone: 50000
+  tasks:
+    ModelConfig:
+      arguments:
+        hidden_size: 128
+        loss_function:
+          ModelConfig:
+            arguments: {}
+            class_name: LogCoshLoss
+        nb_outputs: 1
+        target_labels: [e_visible_calorimetry_daughters_pad_150]
+        transform_inference: '!lambda x: torch.pow(10,x)'
+        transform_target: '!lambda x: torch.log10(x)'
+      class_name: IdentityTask
+  train_log_kwargs: {on_epoch: true, on_step: true, prog_bar: true, sync_dist: true}
+class_name: StandardModel
