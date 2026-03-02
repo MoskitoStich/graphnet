@@ -19,7 +19,6 @@ arguments:
   graph_definition:
     ModelConfig:
       arguments:
-        columns: [0, 1, 2, 7]
         detector:
           ModelConfig:
             arguments:
@@ -50,14 +49,6 @@ arguments:
         perturbation_dict: null
         seed: null
       class_name: KNNGraph
-  optimizer_class: '!class torch.optim.adam Adam'
-  optimizer_kwargs: {lr: 0.001, weight_decay: 0.0}
-  scheduler_class: '!class graphnet.training.callbacks ReduceLROnPlateauWithWarmup'
-  scheduler_config: {frequency: 1, interval: step, monitor: train_loss, reduce_on_plateau: true}
-  scheduler_kwargs:
-    reducelronplateau_kwargs: {factor: 0.5, mode: min, patience: 1000, threshold: 0.01}
-    warmup_kwargs: {start_factor: 0.001}
-    warmup_milestone: 50000
   tasks:
     ModelConfig:
       arguments:
@@ -71,5 +62,4 @@ arguments:
         transform_inference: '!lambda x: torch.pow(10,x)'
         transform_target: '!lambda x: torch.log10(x)'
       class_name: IdentityTask
-  train_log_kwargs: {on_epoch: true, on_step: true, prog_bar: true, sync_dist: true}
 class_name: StandardModel
